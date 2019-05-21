@@ -31,6 +31,8 @@ Then run
 
 ### Option 2 - docker
 The project is dockerized. Make sure you have docker installed (mimimum version 17.x).
+By default the Spring profile is set to docker
+to change update Dockerfile. 
 
 Build the project using command,
 > ./gradlew clean build
