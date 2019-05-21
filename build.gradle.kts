@@ -9,8 +9,9 @@ plugins {
 }
 
 group = "com.myretail"
-version = "0.0.1-SNAPSHOT"
+version = "1.0.0"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
+
 
 repositories {
 	mavenCentral()
@@ -45,9 +46,7 @@ tasks.withType<KotlinCompile> {
 
 tasks.getByName<BootJar>("bootJar") {
 	classifier = "boot"
-	mainClassName = "com.myretail.myretailpdp.MyRetailPdpApplication"
+	mainClassName = "com.myretail.myretailpdp.MyRetailPdpApplicationKt"
+
 }
 
-tasks.getByName<BootJar>("bootJar") {
-	launchScript()
-}

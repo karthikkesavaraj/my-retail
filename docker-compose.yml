@@ -1,0 +1,13 @@
+version: "2"
+
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+  my_retail_pdp:
+    image: my-retail-pdp:latest
+    ports:
+      - 8080:8080
+    depends_on:
+      - mongodb
