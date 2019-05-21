@@ -3,7 +3,7 @@
 My retail product service is a service that provides Product Name and Price for any given proudct id.
 The application starts in http://localhost:8080
 
-##Pre requisites
+## Pre requisites
 The following are required to execute this project.
 * Jdk 8
 * Rest Client (Advanced REST client / Postman / Curl)
@@ -11,7 +11,7 @@ The following are required to execute this project.
 * Internet connection to call https://redsky.target.com
 * Docker (If using Option 2)
 
-##How to Run
+## How to Run
 Threre are two options to run the project. In either case use your own Rest client to consume the apis.
 ### Option 1 - bootRun
 The project is build using spring boot and gradle. Clone the project and run "./gradlew bootRun" 
