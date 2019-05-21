@@ -5,14 +5,19 @@ import com.myretail.myretailpdp.dao.ProductDao
 import com.myretail.myretailpdp.models.Price
 import com.myretail.myretailpdp.models.Product
 import com.myretail.myretailpdp.models.ProductPrice
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import javax.annotation.PostConstruct
 
 @Service
 class ProductService(){
+
+    val logger = LoggerFactory.getLogger(ProductService::class.java)
 
     @Autowired
     lateinit var priceDao: PriceDao
@@ -21,24 +26,38 @@ class ProductService(){
     lateinit var productDao: ProductDao
 
     fun getById(id: Long): Product{
-        var productPrice = priceDao.findByIdOrNull(id) as ProductPrice
-        var productData = productDao.getProductDetails(id)
-        return Product(id,productData.product.item.product_description.title, productPrice.price)
+        val product_name: String = getProductName(id)
+        val price: Price = getProductPrice(id)
+        return Product(id,product_name,price)
     }
 
     @Throws(Exception::class)
-    fun update(product: Product): Product {
-        return if(priceDao.existsById(product.id)){
-            val productPrice:ProductPrice = priceDao.save(ProductPrice(id=product.id,price = product.current_price))
-            Product(product.id,product.name,productPrice.price)
+    @HystrixCommand(commandKey = "productPriceCommand")
+    open fun getProductPrice(id:Long): Price {
+        val productPrice = priceDao.findByIdOrNull(id)
+        if (productPrice != null){
+            return productPrice.price
         }else{
-            throw object: Exception("Product doesnot exist"){}
+            throw ResponseStatusException(HttpStatus.NOT_FOUND,"product, price $id not found")
         }
+    }
+
+    @Throws(Exception::class)
+    @HystrixCommand(commandKey = "productNameCommand")
+    open fun getProductName(id:Long): String {
+        val productData = productDao.getProductDetails(id)
+        return productData.product.item.product_description.title
+    }
+
+    @Throws(Exception::class)
+    fun updateProductPrice(product: Product): Product {
+        val productPrice: ProductPrice = priceDao.save(ProductPrice(id=product.id,price = product.current_price))
+        return Product(product.id,product.name,productPrice.price)
     }
 
     @PostConstruct
     fun initialLoad(){
-        println("Hello I am loading initial data")
+        logger.info("Initial Data Load - Start")
 
         /* Not Working Product */
         if(!priceDao.existsById(15117729)){
@@ -69,6 +88,11 @@ class ProductService(){
         if(!priceDao.existsById(13860428)){
             priceDao.save(ProductPrice(13860428,Price(500.00)))
         }
+
+        if(!priceDao.existsById(54382797)){
+            priceDao.save(ProductPrice(54382797,Price(7.50)))
+        }
+        logger.info("Initial Data Load - Done")
     }
 
 }

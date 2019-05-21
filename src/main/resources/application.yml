@@ -1,8 +1,34 @@
 
 product:
   url: "https://redsky.target.com/v2/pdp/tcin/{id}?excludes=taxonomy,price,promtion,bulk_ship,rating_and_review_reviews,rating_and_review_statistics,question_and_answer_statistics"
+server:
+  error:
+    include-stacktrace: never
+hystrix:
+  metrics.enabled: false
+  command:
+    default:
+      execution.timeout.enabled: true
+      execution.isolation.thread.timeoutInMilliseconds: 1
+    productPriceCommand:
+      fallback.enabled: false
+      execution.isolation.thread.timeoutInMilliseconds: 1
+      execution.timeout.enabled: true
+      circuitBreaker.enabled: true
+      circuitBreaker.requestVolumeThreshold: 1
+      circuitBreaker.errorThresholdPercentage: 40
+    productNameCommand:
+      fallback.enabled: false
+      execution.isolation.thread.timeoutInMilliseconds: 1
+      execution.timeout.enabled: true
+      circuitBreaker.enabled: true
+      circuitBreaker.requestVolumeThreshold: 1
+      circuitBreaker.errorThresholdPercentage: 40
 
 logging:
   level:
     root: WARN
     org.springframework.web.client: DEBUG
+    com.myretail.myretailpdp: DEBUG
+    com.netflix.hystrix: TRACE
+    org.springframework.cloud: TRACE
