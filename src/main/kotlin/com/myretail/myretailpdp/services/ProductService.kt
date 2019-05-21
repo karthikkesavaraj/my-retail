@@ -34,7 +34,7 @@ class ProductService(){
     @Throws(Exception::class)
     @HystrixCommand(commandKey = "productPriceCommand")
     open fun getProductPrice(id:Long): Price {
-        val productPrice = priceDao.findByIdOrNull(id)
+        val productPrice:ProductPrice? = priceDao.findByIdOrNull(id)
         if (productPrice != null){
             return productPrice.price
         }else{

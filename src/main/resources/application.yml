@@ -25,6 +25,12 @@ hystrix:
       circuitBreaker.requestVolumeThreshold: 1
       circuitBreaker.errorThresholdPercentage: 40
 
+spring:
+  data:
+    mongodb.host: localhost
+    mongodb.port: 27017
+    mongo.repositories.enabled: true
+
 logging:
   level:
     root: WARN
@@ -32,3 +38,11 @@ logging:
     com.myretail.myretailpdp: DEBUG
     com.netflix.hystrix: TRACE
     org.springframework.cloud: TRACE
+
+---
+spring:
+  profiles: docker
+  data:
+    mongodb.host: mongodb
+    mongodb.port: 27017
+    mongo.repositories.enabled: true
