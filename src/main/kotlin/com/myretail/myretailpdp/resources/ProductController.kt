@@ -28,7 +28,6 @@ class ProductController(){
         var defferedResult: DeferredResult<Product> = DeferredResult<Product>()
 
         var product_observable : Observable<Product> = productService.getById(id)
-        logger.debug("Got observable")
         product_observable.subscribe({product -> defferedResult.setResult(product)})
         return defferedResult
     }
