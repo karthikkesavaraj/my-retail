@@ -2,15 +2,18 @@ package com.myretail.myretailpdp.resources
 
 import com.mongodb.MongoException
 import com.myretail.myretailpdp.models.Product
+import com.myretail.myretailpdp.models.ProductPrice
 import com.myretail.myretailpdp.services.ProductService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import org.springframework.http.HttpStatus
+import reactor.core.publisher.Mono
 import javax.servlet.http.HttpServletResponse
 
 
 @RestController
+@RequestMapping("/v1/product")
 class ProductController(){
 
     val logger = LoggerFactory.getLogger(ProductController::class.java)
@@ -18,15 +21,15 @@ class ProductController(){
     @Autowired
     lateinit var productService: ProductService
 
-    @GetMapping("/v1/product/{id}")
-    fun getProduct(@PathVariable("id") id: Long) : Product{
+    @GetMapping("/{id}")
+    fun getProduct(@PathVariable("id") id: Long) : Mono<Product>{
         if (logger.isDebugEnabled)
             logger.debug("Got GET Request for Product $id")
         return productService.getById(id)
     }
 
-    @PutMapping("/v1/product")
-    fun updateProduct(@RequestBody product: Product) : Product{
+    @PutMapping("")
+    fun updateProduct(@RequestBody product: Product) : Mono<Product>{
         if (logger.isDebugEnabled)
             logger.debug("Got PUT Request for Product ${product.id}")
         return productService.updateProductPrice(product)
