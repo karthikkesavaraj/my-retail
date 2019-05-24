@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import org.springframework.http.HttpStatus
+import org.springframework.web.context.request.async.DeferredResult
+import rx.Observable
 import javax.servlet.http.HttpServletResponse
 
 
@@ -19,10 +21,16 @@ class ProductController(){
     lateinit var productService: ProductService
 
     @GetMapping("/v1/product/{id}")
-    fun getProduct(@PathVariable("id") id: Long) : Product{
+    @SuppressWarnings()
+    fun getProduct(@PathVariable("id") id: Long) : DeferredResult<Product>{
         if (logger.isDebugEnabled)
             logger.debug("Got GET Request for Product $id")
-        return productService.getById(id)
+        var defferedResult: DeferredResult<Product> = DeferredResult<Product>()
+
+        var product_observable : Observable<Product> = productService.getById(id)
+        logger.debug("Got observable")
+        product_observable.subscribe({product -> defferedResult.setResult(product)})
+        return defferedResult
     }
 
     @PutMapping("/v1/product")

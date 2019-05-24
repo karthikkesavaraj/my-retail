@@ -84,6 +84,5 @@ Below products are consumable from the api. So will return a success response
 54382797
 
 ## TODO
-* Add reactive feature
 * Enable Authentication for PUT Method
 * Write Integration Test
