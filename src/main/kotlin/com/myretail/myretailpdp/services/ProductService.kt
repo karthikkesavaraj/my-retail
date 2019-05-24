@@ -12,6 +12,8 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import javax.annotation.PostConstruct
 
 @Service
@@ -25,21 +27,17 @@ class ProductService(){
     @Autowired
     lateinit var productDao: ProductDao
 
-    fun getById(id: Long): Product{
-        val product_name: String = getProductName(id)
-        val price: Price = getProductPrice(id)
-        return Product(id,product_name,price)
+    fun getById(id: Long): Mono<Product>{
+        val product_name_mono: Mono<String> = Mono.fromCallable { getProductName(id) }
+        val price_mono: Mono<ProductPrice> = getProductPrice(id)
+        val product_mono: Mono<Product> = Mono.zip(product_name_mono,price_mono,{product_name,price -> Product(id,product_name,price.price)})
+        return product_mono
     }
 
     @Throws(Exception::class)
     @HystrixCommand(commandKey = "productPriceCommand")
-    open fun getProductPrice(id:Long): Price {
-        val productPrice:ProductPrice? = priceDao.findByIdOrNull(id)
-        if (productPrice != null){
-            return productPrice.price
-        }else{
-            throw ResponseStatusException(HttpStatus.NOT_FOUND,"product, price $id not found")
-        }
+    fun getProductPrice(id:Long): Mono<ProductPrice> {
+        return priceDao.findById(id)
     }
 
     @Throws(Exception::class)
@@ -50,48 +48,25 @@ class ProductService(){
     }
 
     @Throws(Exception::class)
-    fun updateProductPrice(product: Product): Product {
-        val productPrice: ProductPrice = priceDao.save(ProductPrice(id=product.id,price = product.current_price))
-        return Product(product.id,product.name,productPrice.price)
+    fun updateProductPrice(product: Product): Mono<Product> {
+        return priceDao.save(ProductPrice(id=product.id,price = product.current_price))
+                .map { product_price -> Product(product.id,product.name,product_price.price) }
+
     }
 
     @PostConstruct
     fun initialLoad(){
         logger.info("Initial Data Load - Start")
 
-        /* Not Working Product */
-        if(!priceDao.existsById(15117729)){
-            priceDao.save(ProductPrice(15117729,Price(100.00)))
-        }
+        val total = sequenceOf(ProductPrice(15117729,Price(100.00)),
+                ProductPrice(164883589,Price(200.00)),
+                ProductPrice(16696652,Price(300.00)),
+                ProductPrice(16752456,Price(400.00)),
+                ProductPrice(15643793,Price(500.00)),
+                ProductPrice(13860428,Price(500.00)),
+                ProductPrice(54382797,Price(7.50))).map { price -> priceDao.save(price) }.count()
+        logger.info("Initial Data Load - Done $total")
 
-        /* Not Working Product */
-        if(!priceDao.existsById(164883589)){
-            priceDao.save(ProductPrice(164883589,Price(200.00)))
-        }
-
-        /* Not Working Product */
-        if(!priceDao.existsById(16696652)){
-            priceDao.save(ProductPrice(16696652,Price(300.00)))
-        }
-
-        /* Not Working Product */
-        if(!priceDao.existsById(16752456)){
-            priceDao.save(ProductPrice(16752456,Price(400.00)))
-        }
-
-        /* Not Working Product */
-        if(!priceDao.existsById(15643793)){
-            priceDao.save(ProductPrice(15643793,Price(500.00)))
-        }
-
-        /* Working Product */
-        if(!priceDao.existsById(13860428)){
-            priceDao.save(ProductPrice(13860428,Price(500.00)))
-        }
-
-        if(!priceDao.existsById(54382797)){
-            priceDao.save(ProductPrice(54382797,Price(7.50)))
-        }
         logger.info("Initial Data Load - Done")
     }
 
